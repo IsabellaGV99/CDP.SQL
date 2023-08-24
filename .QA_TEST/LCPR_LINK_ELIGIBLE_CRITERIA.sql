@@ -1,5 +1,3 @@
-
-  
 WITH 
 csr_customers AS (
     SELECT 
@@ -10,19 +8,7 @@ csr_customers AS (
 ),
 offers as (
     SELECT 
-        account_id,
-        link,
-        link_dt,
-        CAST(DATEADD(SECOND, link_dt/1000,'1970/1/1') AS DATE) AS link_date,
-       current_date-7 AS min_link_date,
-       case when link_date >= min_link_date then true else false end AS test_link_dt,
-        link_exp_dt,
-        CAST(DATEADD(SECOND, link_exp_dt/1000,'1970/1/1') AS DATE) AS link_exp_date,
-        current_date+7 AS min_link_exp_date,
-         case when link_exp_date >= min_link_exp_date then true else false end,
-        current_date+15 AS max_link_exp_date,
-         case when link_exp_date <= max_link_exp_date then true else false end,
-         case when link_exp_date >= min_link_exp_date and link_exp_date <= max_link_exp_date then true else false end as test_link_exp_date
+        *
     FROM "prod"."public"."lcpr_offers"
 )
 
@@ -33,6 +19,6 @@ csr_customers A
 LEFT JOIN offers B
 on  a.numero_cuenta = b.account_id 
 WHERE 
-   link is not null and
-    test_link_dt =true and
-    test_link_exp_date =true
+    link is not null and
+    CAST(DATEADD(SECOND, link_dt/1000,'1970/1/1') AS DATE) = current_date and
+    CAST(DATEADD(SECOND, link_exp_dt/1000,'1970/1/1') AS DATE) between current_date+7 and current_date + 15
