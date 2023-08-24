@@ -29,7 +29,8 @@ ON csr_attributes.numero_cuenta = flagging_attributes.account_id) CSR_FLAGG LEFT
 WHERE 
     --condiciones offers
     lower(offers.offer_type) = 'single' and 
-offers.rank = 1 and next_best_action_date= current_date AND
+    offers.rank = 1 and 
+    next_best_action_date= current_date AND
     
     --condiciones flagging
-    CSR_FLAGG.privacy_flag = false 
+    (CSR_FLAGG.privacy_flag = false or CSR_FLAGG.privacy_flag is null)
