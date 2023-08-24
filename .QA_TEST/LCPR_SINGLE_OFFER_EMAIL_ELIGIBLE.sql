@@ -1,3 +1,4 @@
+LCPR_SINGLE_OFFER_EMAIL_ELIGIBLE:
 WITH
 csr_attributes as(
     SELECT 
@@ -17,7 +18,7 @@ cs_features as (
     SELECT 
         account_id AS numero,
         lst_bill_dt, 
-        TO_DATE('1970-01-01', 'YYYY-MM-DD') + INTERVAL '1 SECOND' * lst_bill_dt AS converted_date, 
+        CAST(DATEADD(SECOND, lst_bill_dt/1000,'1970/1/1') AS DATE) AS converted_date, 
         current_date-10 AS period_evaluated
     FROM "prod"."public"."lcpr_customer_service_features"
 )
@@ -32,4 +33,4 @@ WHERE
     hsd=1 and
     channel = 'email' and 
     email is not null  and 
-    converted_date >= period_evaluated
+    converted_date <= period_evaluated
