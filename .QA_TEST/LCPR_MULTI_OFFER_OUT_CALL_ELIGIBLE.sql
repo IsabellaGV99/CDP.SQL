@@ -29,40 +29,12 @@ csr_attributes as (
         bill_code AS PCK_CODE,
         res_name_sbb AS CUST_NAME
             from "prod"."public"."lcpr_dna_fixed"
+        where max_dt_ms = dt_ms
     -- limit 100
 ),
-OFFERS_ATTRIBUTES_AWS AS (
+offers AS (
     SELECT
-        account_id AS cuenta,
-        pkg_cde AS from_pck_code,
-        online_descr_pkg AS from_online_descr,
-        smt_descr_pkg AS smt_descr_pkg,
-        hsd_service AS from_hsd_speed,
-        bundlecharge_csg AS from_bundle_chrg,
-        bundlecharge_csg AS to_pck_code,
-        tocsgcodefriendlyname AS to_hsd_speed,
-        to_online_descr_pkg AS to_online_descr,
-        to_smt_descr_pckg AS to_smt_descr,
-        to_bundlecharge_csg AS to_bundle_chrg,
-        discount AS discount,
-       --- date AS dte,
-        rank AS rank_order,
-        stb AS stb_code,
-        additional_charge AS stb_additional_chrg,
-        delta_arpu AS pay_diff,
-        source AS source,
-        regime AS regime,
-        reward AS reward,
-        offer_type AS type,
-        use_case AS use_case,
-        channel AS channel,
-        week_day AS week_day,
-        next_best_action_date_ms AS next_bst_action_dte,
-        time_frame AS time_frame,
-        additional_param_1 AS template_type,
-        additional_param_2 AS message_text,
-        additional_param_3 AS call_to_action,
-        additional_param_4 AS message_subject
+        *
     FROM 
         "prod"."public"."lcpr_offers"
 ),
@@ -76,16 +48,15 @@ select
 from "prod"."public"."flagging"
 -- limit 100
 )
-select 
-   count(distinct CSR_OFFERS.numero_cuenta)
-from (
-select 
-    *
-from csr_attributes CSR left join OFFERS_ATTRIBUTES_AWS OFFERS on CSR.numero_cuenta = OFFERS.cuenta 
-)  CSR_OFFERS LEFT JOIN flagging_attributes ON CSR_OFFERS.numero_cuenta = flagging_attributes.account_id
+
+SELECT 
+    COUNT(DISTINCT csr_attributes.numero_cuenta)
+FROM csr_attributes 
+    left join flagging_attributes on csr_attributes.numero_cuenta = flagging_attributes.account_id
+    left join offers on csr_attributes.numero_cuenta = offers.account_id
 where 
-    -- condición de offers
-    CSR_OFFERS.rank_order= 1   and
-    lower(CSR_OFFERS.type) = 'multiple'   and
-    lower(CSR_OFFERS.channel) = 'call center'  and
-    dnt_call_flag = FALSE
+    dnt_call_flag = false 
+    and
+    offers.rank = 1 and 
+    lower(offers.offer_type) = 'multiple'   and
+    lower(offers.channel) = 'call center' 
